@@ -5,10 +5,10 @@ import plotly.graph_objs as go
 st.set_page_config(layout="wide")
 
 # Загрузка данных
-tp_wh_coverage = pd.read_csv('МаксАссТП/Дашборд/tp_wh_coverage.csv')
-div_coverage = pd.read_csv('МаксАссТП/Дашборд/div_coverage.csv')
-dep_coverage = pd.read_csv('МаксАссТП/Дашборд/dep_coverage.csv')
-div_static_metrics = pd.read_csv('МаксАссТП/Дашборд/div_static_metrics.csv')
+tp_wh_coverage = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/tp_wh_coverage.csv')
+div_coverage = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/div_coverage.csv')
+dep_coverage = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/dep_coverage.csv')
+div_static_metrics = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/div_static_metrics.csv')
 
 
 # Заголовок
