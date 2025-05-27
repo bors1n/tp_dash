@@ -10,17 +10,30 @@ div_coverage = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/ref
 dep_coverage = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/dep_coverage.csv')
 div_static_metrics = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/div_static_metrics.csv')
 
-
 # Заголовок
-st.title('Доля по филиалам')
+st.title('Макс Ассортимент')
 
 # Список филиалов для выбора
 tp_options = sorted(tp_wh_coverage['branch'].unique())
-selected_tps = st.multiselect(
-    'Выберите филиалы',
-    options=tp_options,
-    default=['Владивосток Некрасовская ТП']
-)
+
+# Функция для графика общей доли по всей сети
+def plot_network_coverage():
+    df_network = tp_wh_coverage.groupby('date_').agg({'coverage_rate': 'mean'}).reset_index()
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=df_network['date_'],
+        y=df_network['coverage_rate'],
+        mode='lines+markers',
+        name='Общая доля по сети',
+        line=dict(color='green')
+    ))
+    fig.update_layout(
+        xaxis_title='Дата',
+        yaxis_title='Доля',
+        hovermode='x unified',
+        height=400
+    )
+    return fig
 
 # Функция для графика по филиалам
 def plot_tp_line_chart(selected_tps):
@@ -42,12 +55,33 @@ def plot_tp_line_chart(selected_tps):
     )
     return fig
 
-st.plotly_chart(plot_tp_line_chart(selected_tps), use_container_width=True)
+col_left, col_right = st.columns([1,1])  # две колонки равной ширины
 
-# Блок с двумя графиками — дивизионы и департаменты
-col1, col2 = st.columns(2)
+with col_right:
+    selected_tps = st.multiselect(
+        'Выберите филиалы',
+        options=tp_options,
+        default=['Владивосток Некрасовская ТП']
+    )
+
+with col_left:
+    st.empty()  # пустое место или другой контент
+
+# Верхний ряд с двумя графиками — по выбранным филиалам и по всей сети
+col2, col1 = st.columns(2)
 
 with col1:
+    st.header('Доля по филиалам')
+    st.plotly_chart(plot_tp_line_chart(selected_tps), use_container_width=True)
+
+with col2:
+    st.header('Доля по всей сети')
+    st.plotly_chart(plot_network_coverage(), use_container_width=True)
+
+# Второй ряд с графиками дивизионов и департаментов
+col3, col4 = st.columns(2)
+
+with col3:
     st.header('Доля по дивизионам')
     fig_div = go.Figure()
     for div in div_coverage['div'].unique():
@@ -66,7 +100,7 @@ with col1:
     )
     st.plotly_chart(fig_div, use_container_width=True)
 
-with col2:
+with col4:
     st.header('Доля по департаментам')
     fig_dep = go.Figure()
     for dep in dep_coverage['dep'].unique():
