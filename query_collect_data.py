@@ -1,7 +1,4 @@
 import pandas as pd
-import dash
-from dash import dcc, html, Input, Output
-import plotly.graph_objs as go
 from flib import Db
 
 query = f'''
@@ -26,7 +23,7 @@ FROM RN.Schet_41_Itogi_day sid
 		) mkf ON b.id = mkf.BranchId
 WHERE 
 	1=1 
-	AND sid.`Период` BETWEEN '2025-05-01' AND '2025-05-22'
+	AND sid.`Период` BETWEEN '2025-05-01' AND '2025-05-26'
 	AND sid.`Количество` > 0
 	AND b.is_deleted = 0
 	AND b.type_name = 'Дисконт центр'
@@ -55,7 +52,7 @@ FROM RN.Schet_41_Itogi_day sid
 	) mkf ON b.id = mkf.BranchId
 WHERE 
 	1=1 
-	AND sid.`Период` BETWEEN '2025-05-01' AND '2025-05-22'
+	AND sid.`Период` BETWEEN '2025-05-01' AND '2025-05-26'
 	AND sid.`Количество` > 0
 	AND b.is_deleted = 0
 	AND b.type_name = 'РРЦ'
