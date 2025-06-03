@@ -6,21 +6,28 @@ st.set_page_config(layout="wide")
 
 # Загрузка данных
 @st.cache_data
+# def load_data():
+#     rrc_table = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/rrc_table.csv').dropna()
+#     tp_stock = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/tp_stock.csv').dropna()
+#     available_tp_stock = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/available_tp_stock.csv').dropna()
+#     return rrc_table, tp_stock, available_tp_stock
+
 def load_data():
-    rrc_table = pd.read_csv('rrc_table.csv').dropna()
-    tp_stock = pd.read_csv('tp_stock.csv').dropna()
-    return rrc_table, tp_stock
+    rrc_table = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/main/rrc_table.csv.gz', compression='gzip').dropna()
+    tp_stock = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/main/tp_stock.csv.gz', compression='gzip').dropna()
+    available_tp_stock = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/main/available_tp_stock.csv.gz', compression='gzip').dropna()
+    return rrc_table, tp_stock, available_tp_stock
 
-rrc_table, tp_stock = load_data()
+rrc_table, tp_stock, available_tp_stock = load_data()
 
-st.title("Сравнение ассортимента: РРЦ vs Технопоинты")
+st.title("Сравнение ассортимента: РРЦ vs ТП - 02.06.2025")
 
 # --- САЙДБАР: ФИЛЬТРЫ ---
-st.sidebar.header("🔎 Фильтры")
+st.sidebar.header("Фильтры")
 
 # РРЦ и дивизион
-selected_div = st.sidebar.multiselect("Дивизион", sorted(rrc_table['div'].unique()))
-selected_rrc = st.sidebar.multiselect("РРЦ (Склад)", sorted(rrc_table['rrc_name'].unique()))
+selected_div = st.sidebar.multiselect("Дивизион", sorted(rrc_table['div'].unique()), default="03. див. Западная Сибирь")
+selected_rrc = st.sidebar.multiselect("РРЦ", sorted(rrc_table['rrc_name'].unique()))
 
 # Статусы
 federal_status_filter = st.sidebar.multiselect(
@@ -31,7 +38,6 @@ purchase_status_filter = st.sidebar.multiselect(
     "Статус закупа", sorted(rrc_table['purchase_status_name'].unique()))
 top_category_filter = st.sidebar.multiselect(
     "Топовая категория", options=[True, False], format_func=lambda x: "Топ" if x else "Не топ")
-access_only = st.sidebar.checkbox("Показывать только доступный остаток", value=False)
 
 # Категории (drill-down)
 category1_filter = st.sidebar.multiselect(
@@ -41,33 +47,39 @@ category4_filter = st.sidebar.multiselect(
 
 # --- ФИЛЬТРАЦИЯ ДАННЫХ ---
 df_filtered = rrc_table.copy()
+available_tp_stock_filtered = available_tp_stock.copy()
 
 if selected_div:
     df_filtered = df_filtered[df_filtered['div'].isin(selected_div)]
+    available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['div'].isin(selected_div)]
 
 if selected_rrc:
     df_filtered = df_filtered[df_filtered['rrc_name'].isin(selected_rrc)]
+    available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['rrc_name'].isin(selected_rrc)]
 
 if federal_status_filter:
     df_filtered = df_filtered[df_filtered['federal_status_name'].isin(federal_status_filter)]
+    available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['federal_status_name'].isin(federal_status_filter)]
 
 if life_cycle_filter:
     df_filtered = df_filtered[df_filtered['life_cycle_status_name'].isin(life_cycle_filter)]
+    available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['life_cycle_status_name'].isin(life_cycle_filter)]
 
 if purchase_status_filter:
     df_filtered = df_filtered[df_filtered['purchase_status_name'].isin(purchase_status_filter)]
+    available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['purchase_status_name'].isin(purchase_status_filter)]
 
 if top_category_filter:
     df_filtered = df_filtered[df_filtered['top_category'].isin(top_category_filter)]
+    available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['top_category'].isin(top_category_filter)]
 
 if category1_filter:
     df_filtered = df_filtered[df_filtered['category_1_name'].isin(category1_filter)]
+    available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['category_1_name'].isin(category1_filter)]
 
 if category4_filter:
     df_filtered = df_filtered[df_filtered['category_4_name'].isin(category4_filter)]
-
-if access_only:
-    df_filtered = df_filtered[df_filtered['access'] == True]
+    available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['category_4_name'].isin(category4_filter)]
 
 # --- АГРЕГАЦИЯ И ПОДГОТОВКА ДАННЫХ ДЛЯ ГРАФИКА ---
 
@@ -81,8 +93,15 @@ rrc_agg = (
 tp_agg = (
     tp_stock.groupby(['rrc_id', 'branch'], as_index=False)
     .agg({'product_count_tp': 'sum'})
-    .query('product_count_tp > 1000')
+      # .query('product_count_tp > 1000')
 )
+
+# Агрегация доступного асс по ТП
+tp_agg_available = (
+    available_tp_stock_filtered.groupby(['rrc_id', 'rrc_name', 'branch'], as_index=False)
+    .agg({'product_count': 'sum'})
+)
+
 
 # Подтягиваем названия РРЦ в tp_agg
 rrc_names = df_filtered[['rrc_id', 'rrc_name']].drop_duplicates()
@@ -148,6 +167,21 @@ for rrc in rrc_order:
             showlegend=False,
         ))
 
+    tps_a = tp_agg_available[tp_agg_available['rrc_name'] == rrc]
+    for _, row in tps_a.iterrows():
+        fig.add_trace(go.Bar(
+            x=[f"{rrc} - {row['branch']}"],
+            y=[row['product_count']],
+            name='Потенциал Наполнения',
+            marker_color='#a6d854',
+            text=[str(row['product_count'])],
+            textposition='outside',
+            textfont_color='black',
+            showlegend=False,
+        ))
+
+
+
 # Подписи сверху для сумм по РРЦ
 for i, rrc in enumerate(rrc_order):
     total = y_accessible[i] + y_inaccessible[i]
@@ -161,6 +195,7 @@ for i, rrc in enumerate(rrc_order):
 
 fig.update_layout(
     barmode='stack',
+    height=600,
     xaxis=dict(
         title='РРЦ и Технопоинты',
         categoryorder='array',
@@ -189,7 +224,7 @@ st.plotly_chart(fig, use_container_width=True)
 
 
 # --- ТАБЛИЦА ---
-st.write("📋 Сводная таблица данных")
+st.write("Ассортимент")
 df_cross = (df_filtered.pivot_table(
     index=['rrc_id', 'rrc_name'],
     columns='access',
@@ -197,11 +232,15 @@ df_cross = (df_filtered.pivot_table(
     aggfunc='sum',
     fill_value=0)
     .reset_index()
-)
+            )
+
 df_cross.columns.name = None
 df_cross = df_cross.rename(columns={False: 'Не доступный Остаток РРЦ', True: 'Доступный Остаток РРЦ'})
-absolute_numbers = df_cross.merge(tp_agg, on=['rrc_id', 'rrc_name'], how='left')[['rrc_name', 'branch', 'Не доступный Остаток РРЦ', 'Доступный Остаток РРЦ', 'product_count_tp']]
+absolute_numbers = df_cross.merge(tp_agg, on=['rrc_id', 'rrc_name'], how='left')[['rrc_name', 'rrc_id', 'branch', 'Не доступный Остаток РРЦ', 'Доступный Остаток РРЦ', 'product_count_tp']]
+absolute_numbers = absolute_numbers.merge(tp_agg_available, on=['rrc_id', 'rrc_name', 'branch'], how='left')
 absolute_numbers['Общий остаток РРЦ'] = absolute_numbers['Не доступный Остаток РРЦ'] + absolute_numbers['Доступный Остаток РРЦ']
-absolute_numbers = absolute_numbers.rename(columns={'rrc_name': 'РРЦ', 'branch': 'ТП', 'product_count_tp': 'Остаток ТП'})
-absolute_numbers = absolute_numbers[['РРЦ', 'ТП', 'Общий остаток РРЦ', 'Доступный Остаток РРЦ', 'Не доступный Остаток РРЦ', 'Остаток ТП']]
+absolute_numbers = absolute_numbers.rename(columns={'rrc_name': 'РРЦ', 'branch': 'ТП', 'product_count_tp': 'Остаток ТП', 'product_count': 'Потенциал Наполнения'})
+absolute_numbers = absolute_numbers[['РРЦ', 'ТП', 'Общий остаток РРЦ', 'Доступный Остаток РРЦ', 'Не доступный Остаток РРЦ', 'Остаток ТП', 'Потенциал Наполнения']]
+absolute_numbers = absolute_numbers[absolute_numbers['ТП'].isnull() == False]
+
 st.dataframe(absolute_numbers)
