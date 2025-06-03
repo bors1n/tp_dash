@@ -10,14 +10,6 @@ div_coverage = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/ref
 dep_coverage = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/dep_coverage.csv')
 div_static_metrics = pd.read_csv('https://raw.githubusercontent.com/bors1n/tp_dash/refs/heads/main/div_static_metrics.csv')
 
-
-def load_data():
-    rrc_table = pd.read_csv('rrc_table.csv')
-    tp_stock = pd.read_csv('tp_stock.csv')
-    return rrc_table, tp_stock
-
-rrc_table, tp_stock = load_data()
-
 # Заголовок
 st.title('Макс Ассортимент')
 
