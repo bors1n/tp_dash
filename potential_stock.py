@@ -46,41 +46,53 @@ category4_filter = st.sidebar.multiselect(
     "Категория 4 уровня", sorted(rrc_table['category_4_name'].unique()))
 
 # --- ФИЛЬТРАЦИЯ ДАННЫХ ---
-df_filtered = rrc_table.copy()
+# df_filtered = rrc_table.copy()
 available_tp_stock_filtered = available_tp_stock.copy()
+tp_stock_filtered = tp_stock.copy()
+df_accessible = rrc_table[rrc_table['access'] == True].copy()
+df_inaccessible = rrc_table[rrc_table['access'] == False].copy()
 
 if selected_div:
-    df_filtered = df_filtered[df_filtered['div'].isin(selected_div)]
+    df_accessible = df_accessible[df_accessible['div'].isin(selected_div)]
+    df_inaccessible = df_inaccessible[df_inaccessible['div'].isin(selected_div)]
     available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['div'].isin(selected_div)]
 
 if selected_rrc:
-    df_filtered = df_filtered[df_filtered['rrc_name'].isin(selected_rrc)]
+    df_accessible = df_accessible[df_accessible['rrc_name'].isin(selected_rrc)]
+    df_inaccessible = df_inaccessible[df_inaccessible['rrc_name'].isin(selected_rrc)]
     available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['rrc_name'].isin(selected_rrc)]
 
 if federal_status_filter:
-    df_filtered = df_filtered[df_filtered['federal_status_name'].isin(federal_status_filter)]
+    df_accessible = df_accessible[df_accessible['federal_status_name'].isin(federal_status_filter)]
     available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['federal_status_name'].isin(federal_status_filter)]
 
 if life_cycle_filter:
-    df_filtered = df_filtered[df_filtered['life_cycle_status_name'].isin(life_cycle_filter)]
+    df_accessible = df_accessible[df_accessible['life_cycle_status_name'].isin(life_cycle_filter)]
     available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['life_cycle_status_name'].isin(life_cycle_filter)]
 
 if purchase_status_filter:
-    df_filtered = df_filtered[df_filtered['purchase_status_name'].isin(purchase_status_filter)]
+    df_accessible = df_accessible[df_accessible['purchase_status_name'].isin(purchase_status_filter)]
     available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['purchase_status_name'].isin(purchase_status_filter)]
 
 if top_category_filter:
-    df_filtered = df_filtered[df_filtered['top_category'].isin(top_category_filter)]
+    df_accessible = df_accessible[df_accessible['top_category'].isin(top_category_filter)]
+    df_inaccessible = df_inaccessible[df_inaccessible['top_category'].isin(top_category_filter)]
     available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['top_category'].isin(top_category_filter)]
+    tp_stock_filtered = tp_stock_filtered[tp_stock_filtered['top_category'].isin(top_category_filter)]
 
 if category1_filter:
-    df_filtered = df_filtered[df_filtered['category_1_name'].isin(category1_filter)]
+    df_accessible = df_accessible[df_accessible['category_1_name'].isin(category1_filter)]
+    df_inaccessible = df_inaccessible[df_inaccessible['category_1_name'].isin(category1_filter)]
     available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['category_1_name'].isin(category1_filter)]
+    tp_stock_filtered = tp_stock_filtered[tp_stock_filtered['category_1_name'].isin(category1_filter)]
 
 if category4_filter:
-    df_filtered = df_filtered[df_filtered['category_4_name'].isin(category4_filter)]
+    df_accessible = df_accessible[df_accessible['category_4_name'].isin(category4_filter)]
+    df_inaccessible = df_inaccessible[df_inaccessible['category_4_name'].isin(category4_filter)]
     available_tp_stock_filtered = available_tp_stock_filtered[available_tp_stock_filtered['category_4_name'].isin(category4_filter)]
+    tp_stock_filtered = tp_stock_filtered[tp_stock_filtered['category_4_name'].isin(category4_filter)]
 
+df_filtered = pd.concat([df_accessible, df_inaccessible], ignore_index=True)
 # --- АГРЕГАЦИЯ И ПОДГОТОВКА ДАННЫХ ДЛЯ ГРАФИКА ---
 
 # Агрегация по РРЦ с разделением по доступности из отфильтрованных данных
@@ -91,7 +103,7 @@ rrc_agg = (
 
 # Агрегация по ТП
 tp_agg = (
-    tp_stock.groupby(['rrc_id', 'branch'], as_index=False)
+    tp_stock_filtered.groupby(['rrc_id', 'branch'], as_index=False)
     .agg({'product_count_tp': 'sum'})
       # .query('product_count_tp > 1000')
 )

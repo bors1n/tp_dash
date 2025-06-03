@@ -111,6 +111,8 @@ WHERE
 	b.rrc_id rrc_id,
 	b.name AS branch,
 	b.id AS branch_id,
+	p.category_1_name category_1_name,
+	p.category_4_name category_4_name,
 	p.category_4_id category_4_id,
 	sid.`Номенклатура` AS product
 FROM RN.Schet_41_Itogi_day sid
@@ -143,9 +145,10 @@ WHERE
     tp_stock['branch_id'] = tp_stock['branch_id'].apply(lambda x: str(x))
     tp_stock['category_4_id'] = tp_stock['category_4_id'].apply(lambda x: str(x))
     tp_stock['product'] = tp_stock['product'].apply(lambda x: str(x))
+    tp_stock['top_category'] = tp_stock['category_4_id'].isin(top_category.category_4_id)
 
     #считаю асс для тп
-    tp_stock_group = tp_stock.groupby(['rrc_id', 'branch', 'branch_id', 'category_4_id'], as_index=False)[
+    tp_stock_group = tp_stock.groupby(['rrc_id', 'branch', 'branch_id', 'category_1_name', 'category_4_name', 'category_4_id', 'top_category'], as_index=False)[
         'product'].count().rename(columns={'product': 'product_count_tp'})
 
     # потенциальный остаток для ТП
