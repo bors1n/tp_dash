@@ -25,7 +25,7 @@ def main():
             ) mkf ON b.id = mkf.BranchId
     WHERE 
         1=1 
-        AND sid.`Период` BETWEEN '2025-05-01' AND '2025-06-02'
+        AND sid.`Период` BETWEEN '2025-05-01' AND '2025-06-03'
         AND sid.`Количество` > 0
         AND b.is_deleted = 0
         AND b.type_name = 'Дисконт центр'
@@ -54,7 +54,7 @@ def main():
         ) mkf ON b.id = mkf.BranchId
     WHERE 
         1=1 
-        AND sid.`Период` BETWEEN '2025-05-01' AND '2025-06-02'
+        AND sid.`Период` BETWEEN '2025-05-01' AND '2025-06-03'
         AND sid.`Количество` > 0
         AND b.is_deleted = 0
         AND b.type_name = 'РРЦ'
