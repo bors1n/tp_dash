@@ -1,6 +1,5 @@
 import pandas as pd
 from flib import Db
-from typing import Tuple
 from utils import load_sql
 
 TOP_CATEGORY_CUMSUM_THRESHOLD = 0.7
