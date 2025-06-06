@@ -3,8 +3,8 @@ from flib import Db
 from utils import load_sql
 
 CATEGORY_1_CODES = ('AM18266', 'ID43922', 'AM24114', 'ID43921', 'EY74273', 'IW79893', 'IW79895', 'GH19556')
-DATE_FROM = '2025-05-05'
-DATE_TO = '2025-06-05'
+DATE_FROM = '2025-05-06'
+DATE_TO = '2025-06-06'
 
 def get_tp_wh_data(db: Db, date_from: str, date_to: str, category_1_codes: tuple) -> pd.DataFrame:
     category_1_codes_str = str(category_1_codes)  # для подстановки в SQL IN

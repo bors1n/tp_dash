@@ -20,7 +20,7 @@ def load_data():
 
 rrc_table, tp_stock, available_tp_stock = load_data()
 
-st.title("Сравнение ассортимента: РРЦ vs ТП - 02.06.2025")
+st.title("Сравнение ассортимента: РРЦ vs ТП - 06.06.2025")
 
 # --- САЙДБАР: ФИЛЬТРЫ ---
 st.sidebar.header("Фильтры")
