@@ -2,9 +2,9 @@ SELECT DISTINCT
     b.rrc_id AS rrc_id,
     b.name AS branch,
     b.id AS branch_id,
-    p.category_1_name,
-    p.category_4_name,
-    p.category_4_id,
+    p.category_1_name as category_1_name,
+    p.category_4_name as category_4_name,
+    p.category_4_id as category_4_id,
     sid.`Номенклатура` AS product
 FROM RN.Schet_41_Itogi_day sid
 JOIN dict.branch b ON sid.`Филиал` = b.id

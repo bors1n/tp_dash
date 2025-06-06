@@ -3,9 +3,9 @@ WITH tp_stock AS (
         toDate(sid.`Период`) AS date_,
         b.territory_4_name AS div,
         b.rrc_name as rrc_name,
-        b.rrc_id rrc_id,
+        b.rrc_id as rrc_id,
         b.name AS branch,
-        p.category_1_name dep,
+        p.category_1_name as dep,
         count(DISTINCT sid.`Номенклатура`) AS ass
     FROM RN.Schet_41_Itogi_day sid
         JOIN dict.branch b ON sid.`Филиал` = b.id
@@ -32,7 +32,7 @@ rrc_stock AS (
         toDate(sid.`Период`) AS date_,
         b.id AS rrc_id,
         b.name AS rrc_name,
-        p.category_1_name dep,
+        p.category_1_name as dep,
         count(DISTINCT sid.`Номенклатура`) AS ass
     FROM RN.Schet_41_Itogi_day sid
         JOIN dict.branch b ON sid.`Филиал` = b.id

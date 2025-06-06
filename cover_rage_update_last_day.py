@@ -66,7 +66,7 @@ def main():
         date_from = DATE_FROM_DEFAULT
     else:
         # Берём минус 1 день для подстраховки на возможные обновления
-        date_from = (last_date - timedelta(days=2)).strftime('%Y-%m-%d')
+        date_from = (last_date - timedelta(days=1)).strftime('%Y-%m-%d')
     # Текущая дата — допустим сегодня, или можно передавать параметром
     date_to = datetime.today().strftime('%Y-%m-%d')
 

@@ -246,6 +246,7 @@ df_cross = (df_filtered.pivot_table(
     .reset_index()
             )
 
+# таблица с абсолютными значениями
 df_cross.columns.name = None
 df_cross = df_cross.rename(columns={False: 'Не доступный Остаток РРЦ', True: 'Доступный Остаток РРЦ'})
 absolute_numbers = df_cross.merge(tp_agg, on=['rrc_id', 'rrc_name'], how='left')[['rrc_name', 'rrc_id', 'branch', 'Не доступный Остаток РРЦ', 'Доступный Остаток РРЦ', 'product_count_tp']]
@@ -255,4 +256,46 @@ absolute_numbers = absolute_numbers.rename(columns={'rrc_name': 'РРЦ', 'branc
 absolute_numbers = absolute_numbers[['РРЦ', 'ТП', 'Общий остаток РРЦ', 'Доступный Остаток РРЦ', 'Не доступный Остаток РРЦ', 'Остаток ТП', 'Потенциал Наполнения']]
 absolute_numbers = absolute_numbers[absolute_numbers['ТП'].isnull() == False]
 
-st.dataframe(absolute_numbers)
+if absolute_numbers.empty:
+    st.write('Нет данных')
+else:
+    st.dataframe(absolute_numbers)
+
+
+rrc_stock_2_columns = df_filtered.pivot_table(
+                                            index=['div', 'rrc_id', 'rrc_name', 'category_1_name', 'category_4_name', 'category_4_id'],
+                                            columns=['access'],
+                                            values=['product_count'],
+                                            aggfunc='sum',
+                                            fill_value=0
+                                        )\
+                                .reset_index()
+rrc_stock_2_columns.columns.name = None
+rrc_stock_2_columns = rrc_stock_2_columns.rename(columns={False: 'access_false', True: 'asccess_true'})
+rrc_stock_2_columns.columns = ['_'.join(filter(None, col)).strip() for col in rrc_stock_2_columns.columns.values]
+rrc_stock_2_columns['full_stock'] = rrc_stock_2_columns['product_count_access_false'] + rrc_stock_2_columns[
+    'product_count_access_false']
+
+# собираем остаток РРЦ + Остаток ТП
+t_tp_stock = tp_stock_filtered[['rrc_id', 'branch', 'branch_id', 'category_4_id', 'product_count_tp']].copy()
+rrc_stock_tp_stock = rrc_stock_2_columns.merge(t_tp_stock, on=['rrc_id', 'category_4_id'], how='left')\
+                                        .fillna({"branch": 'Отсуствует', 'branch_id': '00000000-0000-0000-0000-000000000000', 'product_count_tp': 0})
+
+#суммируем потенциальный остаток
+tp_agg_available = (
+    available_tp_stock_filtered.groupby(['rrc_id', 'rrc_name', 'branch', 'branch_id', 'category_4_id'], as_index=False)
+    .agg({'product_count': 'sum'})[['rrc_id', 'branch_id', 'category_4_id', 'product_count']]
+)
+
+# добавляем потенциальный остаток ТП
+df_full_table = rrc_stock_tp_stock.merge(tp_agg_available, on=['rrc_id', 'branch_id', 'category_4_id'], how='left').fillna(0)
+df_full_table = df_full_table.rename(columns={'div': 'Дивизион', 'rrc_name': 'РРЦ', 'category_1_name': 'Департамент', 'category_4_name': 'Категория',
+                              'product_count_access_false': 'Не доступный остаток РРЦ', 'product_count_asccess_true': 'Доступный остаток РРЦ',
+                              'full_stock': 'Остаток РРЦ', 'branch': 'ТП', 'product_count_tp': 'Остаток ТП', 'product_count': 'Потенциал наполения ТП'})
+
+st.write("Полная таблица")
+
+if df_full_table.empty:
+    st.write('Нет данных')
+else:
+    st.dataframe(df_full_table[['Дивизион', 'РРЦ', 'Департамент', 'Категория', 'Не доступный остаток РРЦ', 'Доступный остаток РРЦ', 'Остаток РРЦ', 'ТП', 'Остаток ТП', 'Потенциал наполения ТП']])

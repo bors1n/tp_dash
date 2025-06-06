@@ -2,14 +2,14 @@ SELECT DISTINCT
     b.territory_4_name AS div,
     b.name AS rrc_name,
     b.id AS rrc_id,
-    p.category_1_name,
-    p.category_4_name,
-    p.category_4_id,
+    p.category_1_name AS category_1_name,
+    p.category_4_name AS category_4_name,
+    p.category_4_id AS category_4_id,
     sid.`Номенклатура` AS product,
     sid.`Количество` AS stock,
-    p.federal_status_name,
-    p.life_cycle_status_name,
-    p.purchase_status_name
+    p.federal_status_name AS federal_status_name,
+    p.life_cycle_status_name AS life_cycle_status_name,
+    p.purchase_status_name AS purchase_status_name
 FROM RN.Schet_41_Itogi_day sid
 JOIN dict.branch b ON sid.`Филиал` = b.id
 JOIN dict.product p ON sid.`Номенклатура` = p.id
