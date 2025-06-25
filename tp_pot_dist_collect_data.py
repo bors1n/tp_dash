@@ -13,7 +13,7 @@ TP_EXCLUDED_BRANCH_NAMES = [
     'Киров ТП на Щорса', 'Чита Торг. Склад ТП', 'Владивосток Днепровская ТП ',
     'Краснодар Магазин-склад ДНС', 'Тула Торг. Склад', 'Кра Торг. Склад ТП',
     'Владимир Технопоинт', 'Новосиб Технопоинт СК Сибирский', 'Ростов Магазин-склад Технопоинт new', 'Рыбинск ТП']
-PERIOD = '2025-06-05'
+PERIOD = '2025-06-25'
 
 def get_top_categories(db: Db, date_start: str = '2025-01-01', threshold: float = 0.7) -> pd.Series:
     sql = load_sql('top_categories.sql', date_start=date_start, threshold=threshold)
